@@ -2,8 +2,9 @@ import turtle
 import random
 
 cell_size = 20
-grid_size = 7
+grid_size = 21                          # Tamaño Mapa
 grid_length = cell_size * grid_size
+snake_speed = 50                       # Velocidad del snake en milisegundos
 
 screen = turtle.Screen()
 screen.bgcolor("#1e1e2e")
@@ -19,7 +20,7 @@ turtle.tracer(0, 0)
 start_x = -grid_length / 2
 start_y = grid_length / 2
 
-# Crear lista de posiciones válidas alineadas con la cuadrícula
+# Coordenadas válidas alineadas con la cuadrícula
 valid_positions = []
 for row in range(grid_size):
     for col in range(grid_size):
@@ -42,7 +43,7 @@ def draw_grid():
         pen.end_fill()
         pen.penup()
 
-    # Dibujar el marco
+    # Marco
     pen.pensize(2)
     pen.color("#1e1e2e")
     pen.goto(start_x, start_y)
@@ -53,8 +54,8 @@ def draw_grid():
     pen.goto(start_x, start_y)
     pen.penup()
 
-# --- Snake setup ---
-snake = [valid_positions[grid_size * grid_size // 2]]
+# Snake
+snake = [valid_positions[len(valid_positions) // 2]]
 snake_dir = (0, -cell_size)
 
 def draw_snake():
@@ -69,14 +70,13 @@ def draw_snake():
         pen.end_fill()
         pen.penup()
 
-# --- Movement and wrapping ---
 def move_snake():
     head_x, head_y = snake[0]
     dx, dy = snake_dir
     new_x = head_x + dx
     new_y = head_y + dy
 
-    # Warp en los bordes
+    # Teletransporte si sale de los límites
     if new_x < start_x:
         new_x = start_x + (grid_size - 1) * cell_size
     elif new_x > start_x + (grid_size - 1) * cell_size:
@@ -89,13 +89,12 @@ def move_snake():
     new_head = (new_x, new_y)
     snake.insert(0, new_head)
 
-    # Comer
     if food_pos and new_head == food_pos:
         spawn_food()
     else:
         snake.pop()
 
-# --- Input ---
+# Dirección
 def go_up():
     global snake_dir
     if snake_dir != (0, -cell_size):
@@ -116,7 +115,7 @@ def go_right():
     if snake_dir != (-cell_size, 0):
         snake_dir = (cell_size, 0)
 
-# --- Food ---
+# Comida
 food = turtle.Turtle()
 food.shape("square")
 food.color("red")
@@ -124,9 +123,16 @@ food.penup()
 food.hideturtle()
 food_pos = None
 
-# --- Setup ---
-draw_grid()
+def spawn_food():
+    global food_pos
+    possible = [pos for pos in valid_positions if pos not in snake]
+    food_pos = random.choice(possible)
+    food.goto(food_pos[0] + cell_size // 2, food_pos[1] - cell_size // 2)
+    food.showturtle()
 
+# Setup inicial
+draw_grid()
+spawn_food()
 
 screen.listen()
 screen.onkey(go_up, "Up")
@@ -134,10 +140,13 @@ screen.onkey(go_down, "Down")
 screen.onkey(go_left, "Left")
 screen.onkey(go_right, "Right")
 
-# --- Game loop ---
-while True:
+# Bucle con control de velocidad
+def game_loop():
     move_snake()
     draw_grid()
     draw_snake()
     turtle.update()
-    turtle.delay(150)
+    screen.ontimer(game_loop, snake_speed)
+
+game_loop()
+screen.mainloop()
