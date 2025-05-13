@@ -1,68 +1,73 @@
-# snake.py
+
+import pygame
 
 class Snake:
-    def __init__(self, start_position, up, down, right, left, color, block_size, play_area_rect):
-        self.up = up
-        self.down = down
-        self.left = left
-        self.right = right
-        self.direction = right
-        self.head_pos = list(start_position)
-        self.body = [list(start_position),
-                     [start_position[0] - block_size, start_position[1]],
-                     [start_position[0] - 2 * block_size, start_position[1]]]
-        self.score = 0
-        self.color = color
-        self.alive = True
-        self.block_size = block_size    
-        self.play_area_rect = play_area_rect
 
+    def __init__(self, start_pos, r, g, b):
+        # Initialize snake's body, base color, and growth flag
+        self.body = [start_pos]
+        self.color = (r, g, b)
+        self.grow = False
 
-    def update_direction(self, change_to):
-        if change_to == self.up and self.direction != self.down:
-            self.direction = self.up
-        elif change_to == self.down and self.direction != self.up:
-            self.direction = self.down
-        elif change_to == self.left and self.direction != self.right:
-            self.direction = self.left
-        elif change_to == self.right and self.direction != self.left:
-            self.direction = self.right
-
-    def move(self):
-        if self.direction == self.up:
-            self.head_pos[1] -= self.block_size
-        elif self.direction == self.down:
-            self.head_pos[1] += self.block_size
-        elif self.direction == self.left:
-            self.head_pos[0] -= self.block_size
-        elif self.direction == self.right:
-            self.head_pos[0] += self.block_size
-        self.body.insert(0, list(self.head_pos))
-
-    def check_food_collision(self, food_pos):
-        if self.head_pos == food_pos:
-            self.score += 1
-            return True
+    def move(self, direction):
+        # Compute new head based on direction
+        x, y = self.body[0]
+        if direction == "UP":
+            new_head = (x, y - 1)
+        elif direction == "DOWN":
+            new_head = (x, y + 1)
+        elif direction == "LEFT":
+            new_head = (x - 1, y)
+        elif direction == "RIGHT":
+            new_head = (x + 1, y)
         else:
+            return
+
+        # Insert new head
+        self.body.insert(0, new_head)
+
+        # Remove tail unless we're growing
+        if not self.grow:
             self.body.pop()
-            return False
+        else:
+            self.grow = False
 
-    def check_self_collision(self):
-        return self.head_pos in self.body[1:]
+    def draw(self, screen):
+        # Draw the head with full color and the body segments with a darker shade
+        for index, segment in enumerate(self.body):
+            # Calculate rectangle position
+            rect = pygame.Rect(
+                segment[0] * 25 + 189,
+                segment[1] * 25 + 189,
+                23, 23
+            )
+            if index == 0:
+                # Draw head with full color
+                pygame.draw.rect(screen, self.color, rect)
+            else:
+                # Draw body segment with 80% brightness
+                r, g, b = self.color
+                dark_color = (int(r * 0.7), int(g * 0.7), int(b * 0.7))
+                pygame.draw.rect(screen, dark_color, rect)
 
-    def check_border_collision(self):
-        return not self.play_area_rect.collidepoint(self.head_pos)
+    def check_collision(self, min_coord, max_coord):
 
+        # Check wall collision for head
+        head = self.body[0]
+        if head[0] < min_coord or head[0] > max_coord or head[1] < min_coord or head[1] > max_coord:
+            return True
+        # Check self-collision
+        if head in self.body[1:]:
+            return True
+        return False
 
-    def get_head_position(self):
-        return self.head_pos
-
-    def get_body(self):
-        return self.body
-
-    def get_score(self):
-        return self.score
-
-    def draw(self, surface, pygame):
-        for block in self.body:
-            pygame.draw.rect(surface, self.color, pygame.Rect(block[0], block[1], self.block_size, self.block_size))
+    def eats(self, fruit_pos):
+        
+        # Check if head is on fruit
+        if self.body[0] == fruit_pos:
+            self.grow = True
+            return True
+        return False
+    
+    def reverse(self, ):
+        pass
