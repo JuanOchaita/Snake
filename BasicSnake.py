@@ -149,28 +149,26 @@ def main():
                 if new_dir and not is_opposite(direction, new_dir):
                     direction = new_dir
 
-        ghost_move = ["UP", "LEFT", "DOWN", "RIGHT"]
 
-        for ghost_movement in ghost_move:
-            # always move in current direction
-            snake.move(ghost_movement)
+        # always move in current direction
+        snake.move(direction)
 
-            # collision check
-            if snake.check_collision(min_coord, max_coord):
-                break
+        # collision check
+        if snake.check_collision(min_coord, max_coord):
+            break
 
-            # eating fruit
-            if snake.eats(fruit):
-                fruit = generate_fruit(snake.body, min_coord, max_coord)
+        # eating fruit
+        if snake.eats(fruit):
+            fruit = generate_fruit(snake.body, min_coord, max_coord)
 
-            # redraw everything
-            draw_scene(screen, grid, width, height)
-            snake.draw(screen)
-            pygame.draw.rect(screen, (255, 0, 0),
-                            pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
-            pygame.display.flip()
+        # redraw everything
+        draw_scene(screen, grid, width, height)
+        snake.draw(screen)
+        pygame.draw.rect(screen, (255, 0, 0),
+                        pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+        pygame.display.flip()
 
-            pygame.time.delay(100)
+        pygame.time.delay(100)
 
     pygame.quit()
 
