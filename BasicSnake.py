@@ -61,48 +61,30 @@ def main():
     direction = None
     running = True
 
+    comandos = ["LEFT", "UP", "RIGHT", "RIGHT", "DOWN", "DOWN", "LEFT", "LEFT", "RIGHT", "RIGHT", "UP", "UP", "LEFT", "LEFT", "DOWN", "RIGHT"]
+
     while running:
-        
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-            elif event.type == pygame.KEYDOWN:
-                # map key to direction
-                if event.key in (pygame.K_w, pygame.K_UP):
-                    new_dir = "UP"
-                elif event.key in (pygame.K_s, pygame.K_DOWN):
-                    new_dir = "DOWN"
-                elif event.key in (pygame.K_a, pygame.K_LEFT):
-                    new_dir = "LEFT"
-                elif event.key in (pygame.K_d, pygame.K_RIGHT):
-                    new_dir = "RIGHT"
-                else:
-                    new_dir = None
-
-                # only update if not opposite to current direction
-                if new_dir and not is_opposite(direction, new_dir):
-                    direction = new_dir
 
         # always move in current direction
-        snake.move(direction)
+        for comand in comandos:
+            snake.move(comand)
 
-        # collision check
-        if snake.check_collision(min_coord, max_coord):
-            break
+            # collision check
+            if snake.check_collision(min_coord, max_coord):
+                break
 
-        # eating fruit
-        if snake.eats(fruit):
-            fruit = generate_fruit(snake.body, min_coord, max_coord)
+            # eating fruit
+            if snake.eats(fruit):
+                fruit = generate_fruit(snake.body, min_coord, max_coord)
 
-        # redraw everything
-        draw_scene(screen, grid, width, height)
-        snake.draw(screen)
-        pygame.draw.rect(screen, (255, 0, 0),
-                        pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
-        pygame.display.flip()
+            # redraw everything
+            draw_scene(screen, grid, width, height)
+            snake.draw(screen)
+            pygame.draw.rect(screen, (255, 0, 0),
+            pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+            pygame.display.flip()
 
-        pygame.time.delay(100)
+            pygame.time.delay(500)
 
     pygame.quit()
 
