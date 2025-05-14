@@ -2,10 +2,10 @@ import pygame
 import random
 from Snake import Snake
 from Stack import Stack
+from QueueStack import QueueStack
 
 def draw_scene(screen, grid_size, width, height):
 
-    # Draw background and grid
     padding = 2
     cell = 23
     grid_w = grid_size * cell + (grid_size - 1) * padding
@@ -22,7 +22,6 @@ def draw_scene(screen, grid_size, width, height):
 
 def generate_fruit(snake_body, min_coord, max_coord):
 
-    # Place fruit at random position not occupied by snake
     while True:
         pos = (random.randint(min_coord, max_coord),
                random.randint(min_coord, max_coord))
@@ -31,11 +30,36 @@ def generate_fruit(snake_body, min_coord, max_coord):
 
 def is_opposite(dir1, dir2):
 
-    # Return True if dir1 and dir2 are opposites
     return (dir1 == "UP" and dir2 == "DOWN") or \
            (dir1 == "DOWN" and dir2 == "UP") or \
            (dir1 == "LEFT" and dir2 == "RIGHT") or \
            (dir1 == "RIGHT" and dir2 == "LEFT")
+
+def death_moves(history: QueueStack):
+    inverse = Stack(history.Max)
+    inverse_opposite = Stack(history.Max)
+
+    opposites = {
+        "LEFT": "RIGHT",
+        "RIGHT": "LEFT",
+        "UP": "DOWN",
+        "DOWN": "UP"
+    }
+
+    # Copiamos los elementos directamente sin tocar el stack original
+    original_elements = history.Elements.copy()
+
+    # Recorremos en orden inverso
+    for i in range(history.Max - 1, -1, -1):
+        move = original_elements[i]
+        inverse.Push(move)
+        if move in opposites:
+            inverse_opposite.Push(opposites[move])
+        else:
+            inverse_opposite.Push(None)
+
+    return inverse, inverse_opposite
+
 
 def main():
 
@@ -52,24 +76,22 @@ def main():
     snake = Snake((4, 4), 255, 255, 255)
     fruit = generate_fruit(snake.body, min_coord, max_coord)
 
-    # initial draw
+    movement_history = QueueStack(10)
+
     draw_scene(screen, grid, width, height)
     snake.draw(screen)
     pygame.draw.rect(screen, (255, 0, 0),
     pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
     pygame.display.flip()
-    
-    direction = None
-    running = True
 
-    while running:
-        
+    direction = None
+
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
             elif event.type == pygame.KEYDOWN:
-                # map key to direction
                 if event.key in (pygame.K_w, pygame.K_UP):
                     new_dir = "UP"
                 elif event.key in (pygame.K_s, pygame.K_DOWN):
@@ -81,24 +103,31 @@ def main():
                 else:
                     new_dir = None
 
-                # only update if not opposite to current direction
                 if new_dir and not is_opposite(direction, new_dir):
                     direction = new_dir
 
-        # always move in current direction
-        snake.move(direction)
+        if direction:
+            snake.move(direction)
 
-        # collision check
         if snake.check_collision(min_coord, max_coord):
+            ghost_moves, back_to_past_moves = death_moves(movement_history)
+            print(movement_history)
+            print(ghost_moves)
+            print(back_to_past_moves)
+
+            # Back Time
+            snake.reverse()
+
+
+
             break
 
+        if direction:
+            movement_history.Push(direction)
 
-
-        # eating fruit
         if snake.eats(fruit):
             fruit = generate_fruit(snake.body, min_coord, max_coord)
 
-        # redraw everything
         draw_scene(screen, grid, width, height)
         snake.draw(screen)
         pygame.draw.rect(screen, (255, 0, 0),
@@ -111,4 +140,3 @@ def main():
 
 if __name__ == "__main__":
     main()
- 

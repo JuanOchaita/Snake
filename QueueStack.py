@@ -1,4 +1,4 @@
-class Stack:
+class QueueStack:
     
     def __init__(self, size: int):
         self.Top = -1
@@ -9,9 +9,10 @@ class Stack:
         return f"Current stack: {self.Elements} | Top: {self.Top}"
 
     def Push(self, value: int) -> None:
+
         if value is None:
             return  # Ignorar valores None
-        
+
         if self.Top == self.Max - 1:
             # Realizar un desplazamiento hacia la izquierda
             for i in range(1, self.Max):
