@@ -68,6 +68,28 @@ class Snake:
             self.grow = True
             return True
         return False
-    
-    def reverse(self, ):
-        pass
+        
+    def reverse(self, direction):
+        # Obtener la posición de la cola
+        x, y = self.body[-1]
+
+        # Calcular la nueva posición de la cola en función de la dirección
+        if direction == "UP":
+            new_tail = (x, y - 1)
+        elif direction == "DOWN":
+            new_tail = (x, y + 1)
+        elif direction == "LEFT":
+            new_tail = (x - 1, y)
+        elif direction == "RIGHT":
+            new_tail = (x + 1, y)
+        else:
+            return
+
+        # Agregar nueva cola
+        self.body.append(new_tail)
+
+        # Quitar cabeza a menos que esté creciendo
+        if not self.grow:
+            self.body.pop(0)
+        else:
+            self.grow = False
