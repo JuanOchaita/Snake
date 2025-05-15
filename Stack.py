@@ -32,7 +32,6 @@ class Stack:
                 self.Elements[i] = None  # Eliminar el valor del stack
                 self.Top = i - 1  # Ajustar el índice de Top
                 return value
-        print("Stack Underflow")
         return None
 
     def Peek(self) -> any:
@@ -40,5 +39,4 @@ class Stack:
         for i in range(self.Top, -1, -1):
             if self.Elements[i] is not None:
                 return self.Elements[i]
-        print("Stack Underflow")
         return None
