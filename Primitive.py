@@ -137,6 +137,8 @@ def show_game_over(screen, font, score):
 
 def main():
     score = 0
+    rewind_mode = False
+    gm = False
 
     pygame.init()
     width, height = 601, 601
@@ -206,15 +208,19 @@ def main():
                 # only update if not opposite to current direction
                 if new_dir and not is_opposite(direction, new_dir):
                     direction = new_dir
+                    if rewind_mode:
+                        rewind_mode = False  # Resume normal game after key press
 
         # always move in current direction
-        snake.move(direction)
+        if direction and not rewind_mode:
+            snake.move(direction)
 
         # collision check
         if snake.check_collision(min_coord, max_coord):
             show_game_over(screen, font, score)
+            gm = True
             
-            while True:
+            while gm == True:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
@@ -239,52 +245,101 @@ def main():
                             main()  # Restart game
                             return
                         elif event.key == pygame.K_z:
-                            if rewind_index == 9 and Bsnake9:
+                            if Bsnake9:
                                 snake = Bsnake9.clone()
-                                rewind_index -= 1
-                            elif rewind_index == 8 and Bsnake8:
-                                snake = Bsnake8.clone()
-                                rewind_index -= 1
-                            elif rewind_index == 7 and Bsnake7:
-                                snake = Bsnake7.clone()
-                                rewind_index -= 1
-                            elif rewind_index == 6 and Bsnake6:
-                                snake = Bsnake6.clone()
-                                rewind_index -= 1
-                            elif rewind_index == 5 and Bsnake5:
-                                snake = Bsnake5.clone()
-                                rewind_index -= 1
-                            elif rewind_index == 4 and Bsnake4:
-                                snake = Bsnake4.clone()
-                                rewind_index -= 1
-                            elif rewind_index == 3 and Bsnake3:
-                                snake = Bsnake3.clone()
-                                rewind_index -= 1
-                            elif rewind_index == 2 and Bsnake2:
-                                snake = Bsnake2.clone()
-                                rewind_index -= 1
-                            elif rewind_index == 1 and Bsnake1:
-                                snake = Bsnake1.clone()
-                                rewind_index -= 1
-                            elif rewind_index == 0 and Bsnake0:
-                                snake = Bsnake0.clone()
-                                rewind_index -= 1
-                            else:
-                                continue  # No valid rewind frame
-                            
-                            # REDRAW after rewind so player sees the updated game state:
-                            draw_scene(screen, grid, width, height)
-                            snake.draw(screen)
-                            pygame.draw.rect(screen, (255, 0, 0),
-                                pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
-                            score_text = font.render(f"Score: {score}", True, (255, 255, 255))
-                            resume_text = font.render(f"To resume: hit enter", True, (255, 255, 255))
-                            screen.blit(score_text, (20, 20))
-                            screen.blit(resume_text, (200, 30))
-                            pygame.display.flip()
-                        elif event.key == pygame.K_RETURN and rewind_index <= 8:
-                            break
+                                draw_scene(screen, grid, width, height)
+                                snake.draw(screen)
+                                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+                                screen.blit(font.render(f"Score: {score}", True, (255, 255, 255)), (20, 20))
+                                pygame.display.flip()
+                                pygame.time.delay(500)
 
+                            if Bsnake8:
+                                snake = Bsnake8.clone()
+                                draw_scene(screen, grid, width, height)
+                                snake.draw(screen)
+                                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+                                screen.blit(font.render(f"Score: {score}", True, (255, 255, 255)), (20, 20))
+                                pygame.display.flip()
+                                pygame.time.delay(500)
+
+                            if Bsnake7:
+                                snake = Bsnake7.clone()
+                                draw_scene(screen, grid, width, height)
+                                snake.draw(screen)
+                                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+                                screen.blit(font.render(f"Score: {score}", True, (255, 255, 255)), (20, 20))
+                                pygame.display.flip()
+                                pygame.time.delay(500)
+
+                            if Bsnake6:
+                                snake = Bsnake6.clone()
+                                draw_scene(screen, grid, width, height)
+                                snake.draw(screen)
+                                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+                                screen.blit(font.render(f"Score: {score}", True, (255, 255, 255)), (20, 20))
+                                pygame.display.flip()
+                                pygame.time.delay(500)
+
+                            if Bsnake5:
+                                snake = Bsnake5.clone()
+                                draw_scene(screen, grid, width, height)
+                                snake.draw(screen)
+                                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+                                screen.blit(font.render(f"Score: {score}", True, (255, 255, 255)), (20, 20))
+                                pygame.display.flip()
+                                pygame.time.delay(500)
+
+                            if Bsnake4:
+                                snake = Bsnake4.clone()
+                                draw_scene(screen, grid, width, height)
+                                snake.draw(screen)
+                                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+                                screen.blit(font.render(f"Score: {score}", True, (255, 255, 255)), (20, 20))
+                                pygame.display.flip()
+                                pygame.time.delay(500)
+
+                            if Bsnake3:
+                                snake = Bsnake3.clone()
+                                draw_scene(screen, grid, width, height)
+                                snake.draw(screen)
+                                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+                                screen.blit(font.render(f"Score: {score}", True, (255, 255, 255)), (20, 20))
+                                pygame.display.flip()
+                                pygame.time.delay(500)
+
+                            if Bsnake2:
+                                snake = Bsnake2.clone()
+                                draw_scene(screen, grid, width, height)
+                                snake.draw(screen)
+                                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+                                screen.blit(font.render(f"Score: {score}", True, (255, 255, 255)), (20, 20))
+                                pygame.display.flip()
+                                pygame.time.delay(500)
+
+                            if Bsnake1:
+                                snake = Bsnake1.clone()
+                                draw_scene(screen, grid, width, height)
+                                snake.draw(screen)
+                                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+                                screen.blit(font.render(f"Score: {score}", True, (255, 255, 255)), (20, 20))
+                                pygame.display.flip()
+                                pygame.time.delay(500)
+
+                            if Bsnake0:
+                                snake = Bsnake0.clone()
+                                draw_scene(screen, grid, width, height)
+                                snake.draw(screen)
+                                pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+                                screen.blit(font.render(f"Score: {score}", True, (255, 255, 255)), (20, 20))
+                                pygame.display.flip()
+                                pygame.time.delay(500)
+                            
+                            snake = Bsnake0.clone()  # Or whichever is the last rewind
+                            direction = None         # Clear previous direction
+                            rewind_mode = True       # Enter rewind mode
+                            gm = False
+                            break
 
                 pygame.time.delay(100)
 
