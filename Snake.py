@@ -57,13 +57,17 @@ class Snake:
                 dark_color = (int(r * 0.7), int(g * 0.7), int(b * 0.7))
                 pygame.draw.rect(screen, dark_color, rect)
 
-    def check_collision(self, min_coord, max_coord):
+    def check_collision(self, min_coord, max_coord, other_snake):
         head = self.body[0]
         # Colisión con paredes
         if head[0] < min_coord or head[0] > max_coord or head[1] < min_coord or head[1] > max_coord:
             return True
         # Colisión consigo mismo
         if head in self.body[1:]:
+            return True
+        
+        # Colision otra snake
+        if head in other_snake[1:]:
             return True
         return False
 

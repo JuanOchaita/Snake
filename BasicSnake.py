@@ -99,7 +99,6 @@ def render_game(screen, grid, width, height, snake, fruit, show_fruit=True):
         draw_fruit(screen, fruit)
     pygame.display.flip()
 
-
 def main():
     opposites = {
         "LEFT": "RIGHT",
@@ -142,36 +141,42 @@ def main():
             direction = direction_input
 
         if direction:
-            # Guardar antes de moverse
             movement_history.Push(direction)
             frames_history.Push(snake.body.copy())
 
             snake.move(direction)
 
-            # Mover ghost si tiene movimientos
+            # Mover ghost
             next_move = ghost_moves.Pop()
             if next_move is not None:
                 ghost.move(next_move)
-                if ghost.check_collision(min_coord, max_coord):
+                if ghost.check_collision(min_coord, max_coord, []):
                     ghost_visible = False
                 else:
                     ghost_visible = True
             else:
                 ghost_visible = False
 
-            # Verificar colisión del snake
-            if snake.check_collision(min_coord, max_coord):
+            # Verificar colisión (solo si ghost está visible)
+            if snake.check_collision(min_coord, max_coord, ghost.body if ghost_visible else []):
                 last_body = show_replay(screen, grid, width, height, frames_history, snake, direction, opposites)
 
-                snake = Snake(last_body[0], 255, 255, 255)
-                snake.body = last_body.copy()
+                # Validar que last_body esté dentro de los límites
+                fuera_de_limites = any(
+                    x < min_coord or x > max_coord or y < min_coord or y > max_coord
+                    for (x, y) in last_body
+                )
+                if fuera_de_limites:
+                    print("Posición inválida tras la muerte. Reiniciando desde el centro.")
+                    last_body = [(grid // 2, grid // 2)]
 
-                ghost = Snake(last_body[0], 100, 149, 237)
-                ghost.body = last_body.copy()
+                # Reiniciar snake y ghost desde replay
+                snake = Snake.from_data(last_body.copy(), (255, 255, 255))
+                ghost = Snake.from_data(last_body.copy(), (100, 149, 237))
 
                 fruit = generate_fruit(snake.body + ghost.body, min_coord, max_coord)
 
-                # Copiar movimientos del snake al ghost
+                # Copiar movimientos al ghost
                 ghost_moves = Stack(10)
                 for i in range(movement_history.Top, -1, -1):
                     move = movement_history.Elements[i]
@@ -198,23 +203,6 @@ def main():
         pygame.time.delay(100)
 
     pygame.quit()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 if __name__ == "__main__":
     main()
