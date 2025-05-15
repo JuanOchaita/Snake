@@ -1023,5 +1023,90 @@ class Snake:
             return True
         return False
     
-    def reverse(self, ):
-        pass
+    def clone(self):
+        clone = Snake(self.head, *self.color)
+        clone.grow = self.grow
+
+        # Copy all segments manually
+        clone.seg1 = self.seg1
+        clone.seg2 = self.seg2
+        clone.seg3 = self.seg3
+        clone.seg4 = self.seg4
+        clone.seg5 = self.seg5
+        clone.seg6 = self.seg6
+        clone.seg7 = self.seg7
+        clone.seg8 = self.seg8
+        clone.seg9 = self.seg9
+        clone.seg10 = self.seg10
+        clone.seg11 = self.seg11
+        clone.seg12 = self.seg12
+        clone.seg13 = self.seg13
+        clone.seg14 = self.seg14
+        clone.seg15 = self.seg15
+        clone.seg16 = self.seg16
+        clone.seg17 = self.seg17
+        clone.seg18 = self.seg18
+        clone.seg19 = self.seg19
+        clone.seg20 = self.seg20
+        clone.seg21 = self.seg21
+        clone.seg22 = self.seg22
+        clone.seg23 = self.seg23
+        clone.seg24 = self.seg24
+        clone.seg25 = self.seg25
+        clone.seg26 = self.seg26
+        clone.seg27 = self.seg27
+        clone.seg28 = self.seg28
+        clone.seg29 = self.seg29
+        clone.seg30 = self.seg30
+        clone.seg31 = self.seg31
+        clone.seg32 = self.seg32
+        clone.seg33 = self.seg33
+        clone.seg34 = self.seg34
+        clone.seg35 = self.seg35
+        clone.seg36 = self.seg36
+        clone.seg37 = self.seg37
+        clone.seg38 = self.seg38
+        clone.seg39 = self.seg39
+        clone.seg40 = self.seg40
+        clone.seg41 = self.seg41
+        clone.seg42 = self.seg42
+        clone.seg43 = self.seg43
+        clone.seg44 = self.seg44
+        clone.seg45 = self.seg45
+        clone.seg46 = self.seg46
+        clone.seg47 = self.seg47
+        clone.seg48 = self.seg48
+        clone.seg49 = self.seg49
+        clone.seg50 = self.seg50
+        clone.seg51 = self.seg51
+        clone.seg52 = self.seg52
+        clone.seg53 = self.seg53
+        clone.seg54 = self.seg54
+        clone.seg55 = self.seg55
+        clone.seg56 = self.seg56
+        clone.seg57 = self.seg57
+        clone.seg58 = self.seg58
+        clone.seg59 = self.seg59
+        clone.seg60 = self.seg60
+        clone.seg61 = self.seg61
+        clone.seg62 = self.seg62
+        clone.seg63 = self.seg63
+        clone.seg64 = self.seg64
+        clone.seg65 = self.seg65
+        clone.seg66 = self.seg66
+        clone.seg67 = self.seg67
+        clone.seg68 = self.seg68
+        clone.seg69 = self.seg69
+        clone.seg70 = self.seg70
+        clone.seg71 = self.seg71
+        clone.seg72 = self.seg72
+        clone.seg73 = self.seg73
+        clone.seg74 = self.seg74
+        clone.seg75 = self.seg75
+        clone.seg76 = self.seg76
+        clone.seg77 = self.seg77
+        clone.seg78 = self.seg78
+        clone.seg79 = self.seg79
+        clone.seg80 = self.seg80
+
+        return clone
