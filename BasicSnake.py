@@ -58,14 +58,20 @@ def draw_fruit(screen, fruit):
     pygame.draw.rect(screen, (255, 0, 0),
                      pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
 
-def show_replay(screen, grid, width, height, freames_histroy, snake, direction, opposites):
+def show_replay(screen, grid, width, height, frames_history, snake, direction, opposites):
+    # Hacemos una copia para no modificar el original
+    temp_stack = QueueStack(frames_history.Max)
+    # Pasamos los frames para mostrar (copiando)
+    for i in range(frames_history.Top + 1):
+        temp_stack.Push(frames_history.Elements[i])
+
     snake.reverse(opposites[direction])
 
-    last_frame = None  # Variable para guardar el último frame
+    last_frame = None
 
-    while freames_histroy.Top != -1:
-        frame = freames_histroy.Pop()
-        last_frame = frame  # Guardar el frame actual
+    while temp_stack.Top != -1:
+        frame = temp_stack.Pop()
+        last_frame = frame
 
         draw_scene(screen, grid, width, height)
 
@@ -105,23 +111,28 @@ def main():
     width, height = 601, 601
     grid = 9
 
-    min_coord = -(grid - 9) // 2
-    max_coord = (grid - 1) + min_coord
+    min_coord = 0
+    max_coord = grid - 1
 
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("SNAKE")
 
-    snake = Snake((4, 4), 255, 255, 255)
-    fruit = generate_fruit(snake.body, min_coord, max_coord)
+    snake = Snake((4, 4), 255, 255, 255)    # Serpiente blanca
+    ghost = Snake(None, 100, 149, 237)      # Serpiente azul clara
+
+    fruit = generate_fruit(snake.body + ghost.body, min_coord, max_coord)
 
     movement_history = QueueStack(10)
-    freames_histroy = QueueStack(10)
+    frames_history = QueueStack(10)
+    ghost_moves = Stack(10)
+
+    direction = None
+    ghost_visible = False  # Al inicio ghost no visible porque no tiene movimientos
 
     render_game(screen, grid, width, height, snake, fruit)
 
-    direction = None
     running = True
-    freames_histroy.Push(snake.body.copy())
+    frames_history.Push(snake.body.copy())
 
     while running:
         direction, quit_signal = handle_events(direction)
@@ -132,35 +143,58 @@ def main():
         if direction:
             snake.move(direction)
 
+            next_move = ghost_moves.Pop()
+            if next_move is not None:
+                ghost.move(next_move)
+                ghost_visible = True
+            else:
+                # Sin movimientos, ocultar ghost
+                ghost_visible = False
+
         if snake.check_collision(min_coord, max_coord):
-            new_body = show_replay(screen, grid, width, height, freames_histroy, snake, direction, opposites)
+            last_body = show_replay(screen, grid, width, height, frames_history, snake, direction, opposites)
 
-            # Reiniciar la serpiente con el cuerpo del último frame del replay
-            snake = Snake(new_body[0], 255, 255, 255)
-            snake.body = new_body.copy()
+            snake = Snake(last_body[0], 255, 255, 255)
+            snake.body = last_body.copy()
 
-            # Generar una nueva fruta
-            fruit = generate_fruit(snake.body, min_coord, max_coord)
+            ghost = Snake(last_body[0], 100, 149, 237)
+            ghost.body = last_body.copy()
 
-            # Limpiar historial y agregar el estado actual
-            freames_histroy = QueueStack(10)
+            fruit = generate_fruit(snake.body + ghost.body, min_coord, max_coord)
+
+            frames_history = QueueStack(10)
+            ghost_moves = Stack(10)
+            
+            print(movement_history)
+
+
+            for _ in range(movement_history.Top + 1):
+                move = movement_history.Pop()
+                if move is not None:
+                    ghost_moves.Push(move)
+
+            print(ghost_moves)
+
             movement_history = QueueStack(10)
-            freames_histroy.Push(snake.body.copy())
-
-            # Resetear dirección
+            frames_history.Push(snake.body.copy())
             direction = None
 
-            # Continuar jugando
+            ghost_visible = ghost_moves.Top != -1  # Si ghost_moves tiene movimientos, mostrar ghost
+
             continue
 
-        if direction:
-            freames_histroy.Push(snake.body.copy())
-            movement_history.Push(direction)
-
         if snake.eats(fruit):
-            fruit = generate_fruit(snake.body, min_coord, max_coord)
+            fruit = generate_fruit(snake.body + ghost.body, min_coord, max_coord)
 
-        render_game(screen, grid, width, height, snake, fruit)
+        frames_history.Push(snake.body.copy())
+        movement_history.Push(direction)
+
+        draw_scene(screen, grid, width, height)
+        snake.draw(screen)
+        if ghost_visible:
+            ghost.draw(screen)
+        draw_fruit(screen, fruit)
+        pygame.display.flip()
 
         pygame.time.delay(100)
 

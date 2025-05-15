@@ -3,8 +3,11 @@ import pygame
 class Snake:
 
     def __init__(self, start_pos, r, g, b):
-        # Inicializa cuerpo, color y estado de crecimiento
-        self.body = [start_pos]
+        # Si start_pos es None, crear cuerpo vacío
+        if start_pos is None:
+            self.body = []
+        else:
+            self.body = [start_pos]
         self.color = (r, g, b)
         self.grow = False
 
