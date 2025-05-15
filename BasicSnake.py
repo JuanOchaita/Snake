@@ -96,26 +96,38 @@ def render_game(screen, grid, width, height, snake, ghost, ghost_visible, fruit,
     if ghost_visible:
         ghost.draw(screen)
     draw_fruit(screen, fruit)
-    # Mostrar colisiones
+
+    # Mostrar contador colisiones y score
     col_text = font.render(f"Colisiones: {colisiones}", True, (255, 255, 255))
-    screen.blit(col_text, (10, 10))
-    # Mostrar score
     score_text = font.render(f"Puntos: {score}", True, (255, 255, 255))
+    screen.blit(col_text, (10, 10))
     screen.blit(score_text, (10, 40))
+
     pygame.display.flip()
 
-def draw_game_over_menu(screen, width, height, font, score):
+def draw_game_over_menu(screen, width, height, font, score, input_text):
     screen.fill((0, 0, 0))
     title = font.render("Has perdido", True, (255, 0, 0))
     score_text = font.render(f"Puntos finales: {score}", True, (255, 255, 255))
-    retry_text = font.render("Presiona R para reiniciar", True, (255, 255, 255))
-    quit_text = font.render("Presiona Q para salir", True, (255, 255, 255))
+    prompt_text = font.render("Escribe tu nombre:", True, (255, 255, 255))
+    name_text = font.render(input_text, True, (255, 255, 0))
+    retry_text = font.render("Enter para guardar y reiniciar", True, (255, 255, 255))
+    quit_text = font.render("Q para salir sin guardar", True, (255, 255, 255))
 
-    screen.blit(title, (width//2 - title.get_width()//2, height//2 - 90))
-    screen.blit(score_text, (width//2 - score_text.get_width()//2, height//2 - 40))
-    screen.blit(retry_text, (width//2 - retry_text.get_width()//2, height//2 + 20))
-    screen.blit(quit_text, (width//2 - quit_text.get_width()//2, height//2 + 60))
+    screen.blit(title, (width//2 - title.get_width()//2, height//2 - 120))
+    screen.blit(score_text, (width//2 - score_text.get_width()//2, height//2 - 80))
+    screen.blit(prompt_text, (width//2 - prompt_text.get_width()//2, height//2 - 40))
+    screen.blit(name_text, (width//2 - name_text.get_width()//2, height//2))
+    screen.blit(retry_text, (width//2 - retry_text.get_width()//2, height//2 + 40))
+    screen.blit(quit_text, (width//2 - quit_text.get_width()//2, height//2 + 80))
     pygame.display.flip()
+
+def save_score(name, score, filename="scores.txt"):
+    try:
+        with open(filename, "a") as f:
+            f.write(f"{name} {score}\n")
+    except Exception as e:
+        print(f"Error guardando la puntuación: {e}")
 
 def main():
     opposites = {
@@ -134,7 +146,7 @@ def main():
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("SNAKE")
 
-    font = pygame.font.SysFont("Arial", 30)
+    font = pygame.font.SysFont("Arial", 24)
 
     snake = Snake((4, 4), 255, 255, 255)
     ghost = Snake(None, 100, 149, 237)
@@ -150,20 +162,32 @@ def main():
     replaying = False
     colisiones = 0
     score = 0
+
     game_over = False
+    input_name = ""
+    input_active = False
 
     frames_history.Push(snake.body.copy())
 
     while True:
         if game_over:
-            draw_game_over_menu(screen, width, height, font, score)
+            if not input_active:
+                input_active = True
+                input_name = ""
+
+            draw_game_over_menu(screen, width, height, font, score, input_name)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     return
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_r:
-                        # Reiniciar juego
+                    if event.key == pygame.K_BACKSPACE:
+                        input_name = input_name[:-1]
+                    elif event.key == pygame.K_RETURN:
+                        if input_name.strip() != "":
+                            save_score(input_name.strip(), score)
+                        # Reiniciar juego tras guardar o si nombre vacío
                         snake = Snake((4, 4), 255, 255, 255)
                         ghost = Snake(None, 100, 149, 237)
                         fruit = generate_fruit(snake.body + ghost.body, min_coord, max_coord)
@@ -176,11 +200,15 @@ def main():
                         colisiones = 0
                         score = 0
                         game_over = False
+                        input_active = False
                         frames_history.Push(snake.body.copy())
                         render_game(screen, grid, width, height, snake, ghost, ghost_visible, fruit, colisiones, score, font)
                     elif event.key == pygame.K_q:
                         pygame.quit()
                         return
+                    else:
+                        if len(input_name) < 15 and event.unicode.isprintable():
+                            input_name += event.unicode
             continue
 
         direction_input, quit_signal = (None, False) if replaying else handle_events(direction)
@@ -195,7 +223,6 @@ def main():
 
             snake.move(direction)
 
-            # Mover ghost
             next_move = ghost_moves.Pop()
             if next_move is not None:
                 ghost.move(next_move)
@@ -206,7 +233,6 @@ def main():
             else:
                 ghost_visible = False
 
-            # Verificar colisión
             if snake.check_collision(min_coord, max_coord, ghost.body if ghost_visible else []):
                 colisiones += 1
 
@@ -229,7 +255,7 @@ def main():
 
                 snake = Snake.from_data(last_body.copy(), (255, 255, 255))
                 ghost = Snake.from_data(last_body.copy(), (100, 149, 237))
-
+                
                 fruit = generate_fruit(snake.body + ghost.body, min_coord, max_coord)
 
                 ghost_moves = Stack(10)
@@ -246,8 +272,8 @@ def main():
                 continue
 
         if snake.eats(fruit):
-            score += 1
             fruit = generate_fruit(snake.body + ghost.body, min_coord, max_coord)
+            score += 1  # Incrementar puntos al comer fruta
 
         render_game(screen, grid, width, height, snake, ghost, ghost_visible, fruit, colisiones, score, font)
 
