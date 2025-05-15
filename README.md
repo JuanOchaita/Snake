@@ -1,102 +1,123 @@
-# Snake Game — Proyecto con Estructuras de Datos
+# Juego de la Serpiente con Función de Rebobinado - Implementación de Estructuras de Datos
 
-## 1. Caso de uso
+## 1. Descripción del Proyecto y Caso de Uso
 
-Este proyecto consiste en una versión extendida del clásico juego **Snake**, utilizando las estructuras de datos `Stack` y `QueueStack`. El objetivo principal fue aplicar estas estructuras para agregar funcionalidades avanzadas como:
+Este proyecto implementa el clásico juego Snake, enriquecido con una funcionalidad de rewind basada en estructuras de datos personalizadas. La serpiente y sus movimientos se gestionan a través de objetos `Snake` y la historia de movimientos y estados se almacena con stacks y queue-stacks.
 
-* **Sistema de repetición (replay)** después de una colisión.
-* **Visualización de una "serpiente fantasma"** que simula los movimientos previos del jugador.
+**Motivación:**
+- La naturaleza secuencial del movimiento se adapta bien al manejo con stacks.
+- Se demuestra el uso práctico de estructuras como `Stack` y `QueueStack` para almacenar estados y movimientos.
+- La funcionalidad de rewind se implementa almacenando un historial limitado de estados para revertir el juego en caso de colisiones.
+- La función "ghost snake" predice movimientos y mejora la experiencia visual.
 
-La elección del juego Snake surge por ser un entorno controlado y visual donde se pueden demostrar claramente los beneficios de las estructuras de datos, especialmente en el manejo de historial de movimientos y estados.
+## 2. Características Principales y Estructuras de Datos
 
-## 2. Funcionalidades
+### Mecánicas del Juego
 
-La aplicación permite realizar las siguientes operaciones:
+- Control direccional usando teclado (WASD o flechas).
+- Crecimiento de la serpiente al comer fruta.
+- Detección de colisiones con paredes, con el cuerpo propio y con el "ghost snake".
+- Contador de colisiones; tras dos colisiones el juego termina.
+- Registro del score y entrada de nombre al finalizar.
 
-### a. Movimiento de la serpiente principal
+### Funciones Avanzadas
 
-* La serpiente se mueve con las teclas `WASD` o flechas direccionales.
-* Cada movimiento válido se almacena en un `QueueStack` (`movement_history`) para poder ser utilizado luego por la serpiente fantasma (`ghost`).
+1. **Historial de movimientos y estados:**
+   - `QueueStack` almacena las últimas 10 posiciones del cuerpo de la serpiente (`frames_history`).
+   - `QueueStack` también almacena las últimas 10 direcciones (`movement_history`).
+   - `Stack` gestiona los movimientos del ghost snake (`ghost_moves`).
 
-### b. Sistema de repetición (replay)
+2. **Rewind Temporal:**
+   - Cuando ocurre una colisión, se reproduce una "repetición" (`show_replay`) de los últimos movimientos utilizando el historial.
+   - Se puede reconstruir el estado previo y reiniciar el juego desde ahí.
 
-* Cuando ocurre una colisión, se activa un modo “replay” que muestra los últimos 10 estados de la serpiente (`frames_history`), utilizando un `QueueStack`.
-* Estos estados se reproducen visualmente con una breve pausa entre cuadros para simular una repetición animada.
+3. **Ghost Snake:**
+   - Se mueve siguiendo la historia invertida de movimientos.
+   - Se muestra solo si no colisiona con límites ni consigo mismo.
 
-### c. Serpiente fantasma
+4. **Estructuras `Stack` y `QueueStack`:**
+   - Ambos implementan un arreglo fijo con tamaño máximo.
+   - Cuando el stack está lleno, desplazan los elementos a la izquierda para hacer espacio (desplazamiento FIFO para `QueueStack`).
+   - Métodos: `Push`, `Pop` y `Peek` que manejan el stack de manera eficiente, ignorando valores `None`.
 
-* Al iniciar el replay, se crea una serpiente “fantasma” (`ghost`) que sigue los mismos movimientos del jugador en orden inverso, almacenados en un `Stack` (`ghost_moves`).
-* Esta estructura permite que la serpiente fantasma siga exactamente el camino recorrido, ya que la pila conserva el orden inverso de inserción.
+### Clases y Métodos Clave
 
-### d. Control de colisiones
+- **`Snake`**:
+  - `move(direction)`: mueve la cabeza y actualiza el cuerpo.
+  - `reverse(direction)`: mueve la cola hacia una dirección para la función de rewind.
+  - `check_collision(min_coord, max_coord, other_snake)`: verifica colisiones.
+  - `eats(fruit_pos)`: detecta si la serpiente come la fruta.
+  - `draw(screen)`: dibuja la serpiente en pantalla.
 
-* Se permiten hasta 2 colisiones antes de finalizar el juego.
-* Cada colisión resetea parcialmente el estado de la serpiente mediante la función `reverse`, que intenta restaurar su posición anterior.
+- **`Stack` y `QueueStack`**:
+  - Almacenan valores con un tope (`Top`) y tamaño máximo (`Max`).
+  - Realizan desplazamiento para mantener tamaño limitado.
+  - Usadas para almacenar posiciones y movimientos.
 
-### e. Sistema de puntaje
+## 3. Estructura de Archivos
 
-* El jugador gana 1 punto por cada fruta comida.
-* Al finalizar el juego, el puntaje se puede guardar junto con un nombre en un archivo `scores.txt`.
-
-## 3. Diagrama de archivos
-
-```plaintext
-📁 ProyectoSnake/
-├── BasicSnake.py         # Archivo principal que contiene la lógica del juego.
-├── Snake.py              # Clase que representa la serpiente (jugador y fantasma).
-├── Stack.py              # Estructura de datos tipo pila (LIFO).
-├── QueueStack.py         # Variante de pila con comportamiento de cola al llenarse.
-├── scores.txt            # Archivo donde se guardan los puntajes.
-└── README.md             # Documentación del proyecto.
 ```
 
-* **BasicSnake.py**: Punto de entrada de la aplicación. Coordina lógica de entrada, dibujo y actualización de estado.
-* **Snake.py**: Contiene la clase `Snake` con lógica de movimiento, dibujo, colisiones y crecimiento.
-* **Stack.py**: Pila clásica con desplazamiento circular al alcanzar su capacidad máxima.
-* **QueueStack.py**: Variante que simula una cola limitada mediante una pila, útil para mantener histórico reciente.
-* **scores.txt**: Registro persistente de puntajes de los jugadores.
-* **README.md**: Documento explicativo del proyecto.
+📂 SnakeGame/
+├── Stack.py           # Implementación del stack con desplazamiento FIFO
+├── QueueStack.py      # Implementación tipo queue con comportamiento similar a stack limitado
+├── Snake.py           # Clase Snake con métodos de movimiento, dibujo y colisión
+├── BasicSnake.py      # Código principal del juego con funcionalidades completas y rewind
+├── scores.txt         # Archivo para almacenar puntuaciones
+├── README.md          # Documentación del proyecto
 
-## 4. Versión alterna primitiva
+````
 
-Antes de integrar estructuras de datos, se desarrolló una versión básica del juego donde:
+## 4. Descripción del Flujo de Juego
 
-* El movimiento no se almacenaba.
-* No existía la serpiente fantasma ni la funcionalidad de replay.
-* Toda la lógica era secuencial y sin recuperación de estado.
+- El juego inicia con una serpiente blanca y un ghost snake azul.
+- La serpiente principal se mueve con las teclas de dirección, y sus movimientos y posiciones se almacenan en `movement_history` y `frames_history`.
+- El ghost snake repite en orden inverso los movimientos almacenados.
+- Si la serpiente colisiona con paredes, consigo misma o con el ghost snake, se inicia la reproducción de los últimos 10 estados (`show_replay`).
+- Tras la repetición, el estado vuelve a un punto seguro y el jugador puede continuar.
+- El score se incrementa al comer fruta, y al perder se puede ingresar nombre para guardar la puntuación.
+- El juego maneja hasta dos colisiones antes de terminar.
 
-**Implicaciones**:
+## 5. Instalación y Ejecución
 
-* No había posibilidad de simular “retroceso” o ver errores cometidos.
-* Dificultad para extender la funcionalidad sin sobrecargar la lógica principal.
-* Menor reutilización de código y alta dependencia de variables globales.
+### Requisitos
 
-La implementación de estructuras permitió modularizar el diseño y dar una base sólida para futuras mejoras (como “deshacer movimiento”, múltiples vidas o más IA).
+- Python 3.6 o superior
+- Pygame 2.0+
 
-## 5. Instrucciones para ejecutar la aplicación
-
-### Requisitos:
-
-* Python 3.7+
-* Pygame
-
-### Instalación de dependencias:
+### Instalación
 
 ```bash
 pip install pygame
-```
+````
 
-### Ejecutar el juego:
+### Ejecución
 
 ```bash
 python BasicSnake.py
 ```
 
-### Controles:
+### Controles
 
-* Mover la serpiente: `W`, `A`, `S`, `D` o flechas direccionales
-* Guardar puntaje al perder: `Enter`
-* Salir sin guardar: `Q`
-* Borrar letra del nombre: `Backspace`
+| Acción                 | Tecla                          |
+| ---------------------- | ------------------------------ |
+| Mover Arriba           | W o Flecha ↑                   |
+| Mover Abajo            | S o Flecha ↓                   |
+| Mover Izquierda        | A o Flecha ←                   |
+| Mover Derecha          | D o Flecha →                   |
+| Reinicio (tras muerte) | Enter para guardar y reiniciar |
+| Salir                  | Q                              |
 
+## 6. Ventajas de la Implementación
 
+* Uso eficiente de estructuras de datos para manejo limitado de historial.
+* Función rewind con visualización de estados anteriores.
+* Código modular, reutilizable y mantenible.
+* Visualización clara mediante colores y animaciones.
+* Control intuitivo y experiencia de usuario mejorada con ghost snake.
+
+---
+
+Este proyecto ejemplifica cómo implementar estructuras de datos clásicas (stack, queue) para agregar funcionalidades avanzadas a un juego clásico, logrando un balance entre complejidad, rendimiento y usabilidad.
+
+```
