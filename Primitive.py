@@ -135,10 +135,30 @@ def show_game_over(screen, font, score):
 
     pygame.display.flip()
 
+
+def getGhostMove(snake2, snake1):
+    if snake2.head[0] - snake1.head[0] == 1:
+        return "LEFT"
+    elif snake2.head[0] - snake1.head[0] == -1:
+        return "RIGHT"
+    elif snake2.head[1] - snake1.head[1] == 1:
+        return "UP"
+    elif snake2.head[1] - snake1.head[1] == -1:
+        return "DOWN"
+    else:
+        return
+
+
 def main():
     score = 0
     rewind_mode = False
+    rewind_count = 9
     gm = False
+    # Variables for rewind and ghost
+    rewind_steps_remaining = 0  # Tracks remaining rewind moves
+    current_ghost_move = None   # Next move for ghost
+    show_ghost_snake = False    # Controls ghost visibility
+    change = False              # Tracks if player diverged from ghost path
 
     pygame.init()
     width, height = 601, 601
@@ -150,11 +170,8 @@ def main():
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("SNAKE")
     
-    #initialize font
     pygame.font.init()
     font = pygame.font.SysFont("Arial", 28)
-
-
 
     snake = Snake((4, 4), 255, 255, 255)
     Bsnake0 = None
@@ -167,17 +184,15 @@ def main():
     Bsnake7 = None
     Bsnake8 = None
     Bsnake9 = None
-    rewind_index = 9  # Start at most recent
+    Ghost = None
     fruit = generate_fruit(snake, min_coord, max_coord)
 
-    # initial draw
+    # Initial draw
     draw_scene(screen, grid, width, height)
     snake.draw(screen)
     pygame.draw.rect(screen, (255, 0, 0),
         pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
-
     
-    # Render and draw the updated score
     score_text = font.render(f"Score: {score}", True, (255, 255, 255))
     screen.blit(score_text, (20, 20))
 
@@ -187,13 +202,11 @@ def main():
     running = True
 
     while running:
-        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
             elif event.type == pygame.KEYDOWN:
-                # map key to direction
                 if event.key in (pygame.K_w, pygame.K_UP):
                     new_dir = "UP"
                 elif event.key in (pygame.K_s, pygame.K_DOWN):
@@ -205,22 +218,146 @@ def main():
                 else:
                     new_dir = None
 
-                # only update if not opposite to current direction
                 if new_dir and not is_opposite(direction, new_dir):
                     direction = new_dir
                     if rewind_mode:
-                        rewind_mode = False  # Resume normal game after key press
+                        rewind_mode = False  # Resume normal game
 
-        # always move in current direction
-        if direction and not rewind_mode:
+        # Movement: Normal mode
+        if direction and not rewind_steps_remaining:
             snake.move(direction)
+            
+        # Movement: Rewind mode (ghost active)
+        elif direction and rewind_steps_remaining:
+            snake.move(direction)
+            
+            if current_ghost_move and Ghost:
+                Ghost.move(current_ghost_move)
+                
+                # Check if player's path has diverged
+                if snake.head != Ghost.head or direction != current_ghost_move:
+                    change = True
+                
+                rewind_steps_remaining -= 1
+                if rewind_steps_remaining > 0:
+                    # Update ghost's next move
+                    if rewind_steps_remaining == 9:
+                        current_ghost_move = getGhostMove(Bsnake0, Bsnake1)
+                    elif rewind_steps_remaining == 8:
+                        current_ghost_move = getGhostMove(Bsnake1, Bsnake2)
+                    elif rewind_steps_remaining == 7:
+                        current_ghost_move = getGhostMove(Bsnake2, Bsnake3)
+                    elif rewind_steps_remaining == 6:
+                        current_ghost_move = getGhostMove(Bsnake3, Bsnake4)
+                    elif rewind_steps_remaining == 5:
+                        current_ghost_move = getGhostMove(Bsnake4, Bsnake5)
+                    elif rewind_steps_remaining == 4:
+                        current_ghost_move = getGhostMove(Bsnake5, Bsnake6)
+                    elif rewind_steps_remaining == 3:
+                        current_ghost_move = getGhostMove(Bsnake6, Bsnake7)
+                    elif rewind_steps_remaining == 2:
+                        current_ghost_move = getGhostMove(Bsnake7, Bsnake8)
+                    elif rewind_steps_remaining == 1:
+                        current_ghost_move = getGhostMove(Bsnake8, Bsnake9)
+                else:
+                    # Rewind complete: hide ghost
+                    show_ghost_snake = False
+                    current_ghost_move = None
+                    Ghost = None  # Clean up Ghost reference
+                    change = False  # Reset change flag
 
-        # collision check
-        if snake.check_collision(min_coord, max_coord):
+        # Collision check
+        ghost_collision = False
+        if show_ghost_snake and Ghost and change:
+            # Check if snake's head collides with any part of ghost
+            if snake.head == Ghost.head or \
+               snake.head == Ghost.seg1 or \
+               snake.head == Ghost.seg2 or \
+               snake.head == Ghost.seg3 or \
+               snake.head == Ghost.seg4 or \
+               snake.head == Ghost.seg5 or \
+               snake.head == Ghost.seg6 or \
+               snake.head == Ghost.seg7 or \
+               snake.head == Ghost.seg8 or \
+               snake.head == Ghost.seg9 or \
+               snake.head == Ghost.seg10 or \
+               snake.head == Ghost.seg11 or \
+               snake.head == Ghost.seg12 or \
+               snake.head == Ghost.seg13 or \
+               snake.head == Ghost.seg14 or \
+               snake.head == Ghost.seg15 or \
+               snake.head == Ghost.seg16 or \
+               snake.head == Ghost.seg17 or \
+               snake.head == Ghost.seg18 or \
+               snake.head == Ghost.seg19 or \
+               snake.head == Ghost.seg20 or \
+               snake.head == Ghost.seg21 or \
+               snake.head == Ghost.seg22 or \
+               snake.head == Ghost.seg23 or \
+               snake.head == Ghost.seg24 or \
+               snake.head == Ghost.seg25 or \
+               snake.head == Ghost.seg26 or \
+               snake.head == Ghost.seg27 or \
+               snake.head == Ghost.seg28 or \
+               snake.head == Ghost.seg29 or \
+               snake.head == Ghost.seg30 or \
+               snake.head == Ghost.seg31 or \
+               snake.head == Ghost.seg32 or \
+               snake.head == Ghost.seg33 or \
+               snake.head == Ghost.seg34 or \
+               snake.head == Ghost.seg35 or \
+               snake.head == Ghost.seg36 or \
+               snake.head == Ghost.seg37 or \
+               snake.head == Ghost.seg38 or \
+               snake.head == Ghost.seg39 or \
+               snake.head == Ghost.seg40 or \
+               snake.head == Ghost.seg41 or \
+               snake.head == Ghost.seg42 or \
+               snake.head == Ghost.seg43 or \
+               snake.head == Ghost.seg44 or \
+               snake.head == Ghost.seg45 or \
+               snake.head == Ghost.seg46 or \
+               snake.head == Ghost.seg47 or \
+               snake.head == Ghost.seg48 or \
+               snake.head == Ghost.seg49 or \
+               snake.head == Ghost.seg50 or \
+               snake.head == Ghost.seg51 or \
+               snake.head == Ghost.seg52 or \
+               snake.head == Ghost.seg53 or \
+               snake.head == Ghost.seg54 or \
+               snake.head == Ghost.seg55 or \
+               snake.head == Ghost.seg56 or \
+               snake.head == Ghost.seg57 or \
+               snake.head == Ghost.seg58 or \
+               snake.head == Ghost.seg59 or \
+               snake.head == Ghost.seg60 or \
+               snake.head == Ghost.seg61 or \
+               snake.head == Ghost.seg62 or \
+               snake.head == Ghost.seg63 or \
+               snake.head == Ghost.seg64 or \
+               snake.head == Ghost.seg65 or \
+               snake.head == Ghost.seg66 or \
+               snake.head == Ghost.seg67 or \
+               snake.head == Ghost.seg68 or \
+               snake.head == Ghost.seg69 or \
+               snake.head == Ghost.seg70 or \
+               snake.head == Ghost.seg71 or \
+               snake.head == Ghost.seg72 or \
+               snake.head == Ghost.seg73 or \
+               snake.head == Ghost.seg74 or \
+               snake.head == Ghost.seg75 or \
+               snake.head == Ghost.seg76 or \
+               snake.head == Ghost.seg77 or \
+               snake.head == Ghost.seg78 or \
+               snake.head == Ghost.seg79 or \
+               snake.head == Ghost.seg80:
+                ghost_collision = True
+
+        if snake.check_collision(min_coord, max_coord) or ghost_collision:
             show_game_over(screen, font, score)
             gm = True
             
-            while gm == True:
+            while gm:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
@@ -335,52 +472,57 @@ def main():
                                 pygame.display.flip()
                                 pygame.time.delay(500)
                             
-                            snake = Bsnake0.clone()  # Or whichever is the last rewind
-                            direction = None         # Clear previous direction
-                            rewind_mode = True       # Enter rewind mode
+                            rewind_steps_remaining = 10
+                            snake = Bsnake0.clone()
+                            Ghost = Bsnake0.clone()
+                            Ghost.color = (100, 149, 237)  # Light blue for ghost
+                            show_ghost_snake = True
+                            current_ghost_move = getGhostMove(Bsnake0, Bsnake1)
+                            change = False  # Initialize change flag
                             gm = False
-                            break
+                            direction = None  # Reset direction
 
                 pygame.time.delay(100)
 
-
-        # eating fruit
+        # Eating fruit
         if snake.eats(fruit):
             fruit = generate_fruit(snake, min_coord, max_coord)
             score += 1
 
-        # Shift saved states up (rewind memory)
-        if Bsnake9: 
-            Bsnake0 = Bsnake1
-            Bsnake1 = Bsnake2
-            Bsnake2 = Bsnake3
-            Bsnake3 = Bsnake4
-            Bsnake4 = Bsnake5
-            Bsnake5 = Bsnake6
-            Bsnake6 = Bsnake7
-            Bsnake7 = Bsnake8
-            Bsnake8 = Bsnake9
-            Bsnake9 = snake.clone()
-        else:
-            # Fill from None upward until Bsnake9 is used
-            if Bsnake0 is None: Bsnake0 = snake.clone()
-            elif Bsnake1 is None: Bsnake1 = snake.clone()
-            elif Bsnake2 is None: Bsnake2 = snake.clone()
-            elif Bsnake3 is None: Bsnake3 = snake.clone()
-            elif Bsnake4 is None: Bsnake4 = snake.clone()
-            elif Bsnake5 is None: Bsnake5 = snake.clone()
-            elif Bsnake6 is None: Bsnake6 = snake.clone()
-            elif Bsnake7 is None: Bsnake7 = snake.clone()
-            elif Bsnake8 is None: Bsnake8 = snake.clone()
-            elif Bsnake9 is None: Bsnake9 = snake.clone()
+        # Shift saved states (rewind memory) unless in rewind
+        if not rewind_steps_remaining:
+            if Bsnake9:
+                Bsnake0 = Bsnake1
+                Bsnake1 = Bsnake2
+                Bsnake2 = Bsnake3
+                Bsnake3 = Bsnake4
+                Bsnake4 = Bsnake5
+                Bsnake5 = Bsnake6
+                Bsnake6 = Bsnake7
+                Bsnake7 = Bsnake8
+                Bsnake8 = Bsnake9
+                Bsnake9 = snake.clone()
+            else:
+                # Fill from None upward
+                if Bsnake0 is None: Bsnake0 = snake.clone()
+                elif Bsnake1 is None: Bsnake1 = snake.clone()
+                elif Bsnake2 is None: Bsnake2 = snake.clone()
+                elif Bsnake3 is None: Bsnake3 = snake.clone()
+                elif Bsnake4 is None: Bsnake4 = snake.clone()
+                elif Bsnake5 is None: Bsnake5 = snake.clone()
+                elif Bsnake6 is None: Bsnake6 = snake.clone()
+                elif Bsnake7 is None: Bsnake7 = snake.clone()
+                elif Bsnake8 is None: Bsnake8 = snake.clone()
+                elif Bsnake9 is None: Bsnake9 = snake.clone()
 
-        # === SINGLE drawing block for the whole frame ===
+        # Drawing block
         draw_scene(screen, grid, width, height)
         snake.draw(screen)
+        if show_ghost_snake and Ghost:
+            Ghost.draw(screen)
         pygame.draw.rect(screen, (255, 0, 0),
             pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
 
-        # Draw score AFTER drawing background
         score_text = font.render(f"Score: {score}", True, (255, 255, 255))
         screen.blit(score_text, (20, 20))
 
@@ -391,4 +533,3 @@ def main():
 
 if __name__ == "__main__":
     main()
- 
