@@ -99,6 +99,7 @@ def render_game(screen, grid, width, height, snake, fruit, show_fruit=True):
         draw_fruit(screen, fruit)
     pygame.display.flip()
 
+
 def main():
     opposites = {
         "LEFT": "RIGHT",
@@ -110,15 +111,14 @@ def main():
     pygame.init()
     width, height = 601, 601
     grid = 9
-
     min_coord = 0
     max_coord = grid - 1
 
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("SNAKE")
 
-    snake = Snake((4, 4), 255, 255, 255)    # Serpiente blanca
-    ghost = Snake(None, 100, 149, 237)      # Serpiente azul clara
+    snake = Snake((4, 4), 255, 255, 255)
+    ghost = Snake(None, 100, 149, 237)
 
     fruit = generate_fruit(snake.body + ghost.body, min_coord, max_coord)
 
@@ -127,7 +127,7 @@ def main():
     ghost_moves = Stack(10)
 
     direction = None
-    ghost_visible = False  # Al inicio ghost no visible porque no tiene movimientos
+    ghost_visible = False
 
     render_game(screen, grid, width, height, snake, fruit)
 
@@ -135,59 +135,58 @@ def main():
     frames_history.Push(snake.body.copy())
 
     while running:
-        direction, quit_signal = handle_events(direction)
+        direction_input, quit_signal = handle_events(direction)
         if quit_signal:
-            running = False
             break
+        if direction_input:
+            direction = direction_input
 
         if direction:
+            # Guardar antes de moverse
+            movement_history.Push(direction)
+            frames_history.Push(snake.body.copy())
+
             snake.move(direction)
 
+            # Mover ghost si tiene movimientos
             next_move = ghost_moves.Pop()
             if next_move is not None:
                 ghost.move(next_move)
-                ghost_visible = True
+                if ghost.check_collision(min_coord, max_coord):
+                    ghost_visible = False
+                else:
+                    ghost_visible = True
             else:
-                # Sin movimientos, ocultar ghost
                 ghost_visible = False
 
-        if snake.check_collision(min_coord, max_coord):
-            last_body = show_replay(screen, grid, width, height, frames_history, snake, direction, opposites)
+            # Verificar colisión del snake
+            if snake.check_collision(min_coord, max_coord):
+                last_body = show_replay(screen, grid, width, height, frames_history, snake, direction, opposites)
 
-            snake = Snake(last_body[0], 255, 255, 255)
-            snake.body = last_body.copy()
+                snake = Snake(last_body[0], 255, 255, 255)
+                snake.body = last_body.copy()
 
-            ghost = Snake(last_body[0], 100, 149, 237)
-            ghost.body = last_body.copy()
+                ghost = Snake(last_body[0], 100, 149, 237)
+                ghost.body = last_body.copy()
 
-            fruit = generate_fruit(snake.body + ghost.body, min_coord, max_coord)
+                fruit = generate_fruit(snake.body + ghost.body, min_coord, max_coord)
 
-            frames_history = QueueStack(10)
-            ghost_moves = Stack(10)
-            
-            print(movement_history)
+                # Copiar movimientos del snake al ghost
+                ghost_moves = Stack(10)
+                for i in range(movement_history.Top, -1, -1):
+                    move = movement_history.Elements[i]
+                    if move is not None:
+                        ghost_moves.Push(move)
 
-
-            for _ in range(movement_history.Top + 1):
-                move = movement_history.Pop()
-                if move is not None:
-                    ghost_moves.Push(move)
-
-            print(ghost_moves)
-
-            movement_history = QueueStack(10)
-            frames_history.Push(snake.body.copy())
-            direction = None
-
-            ghost_visible = ghost_moves.Top != -1  # Si ghost_moves tiene movimientos, mostrar ghost
-
-            continue
+                movement_history = QueueStack(10)
+                frames_history = QueueStack(10)
+                frames_history.Push(snake.body.copy())
+                direction = None
+                ghost_visible = ghost_moves.Top != -1
+                continue
 
         if snake.eats(fruit):
             fruit = generate_fruit(snake.body + ghost.body, min_coord, max_coord)
-
-        frames_history.Push(snake.body.copy())
-        movement_history.Push(direction)
 
         draw_scene(screen, grid, width, height)
         snake.draw(screen)
@@ -199,6 +198,23 @@ def main():
         pygame.time.delay(100)
 
     pygame.quit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     main()
