@@ -5,7 +5,6 @@ from Stack import Stack
 from QueueStack import QueueStack
 
 def draw_scene(screen, grid_size, width, height):
-
     padding = 2
     cell = 23
     grid_w = grid_size * cell + (grid_size - 1) * padding
@@ -21,7 +20,6 @@ def draw_scene(screen, grid_size, width, height):
             pygame.draw.rect(screen, (24, 24, 37), pygame.Rect(x, y, cell, cell))
 
 def generate_fruit(snake_body, min_coord, max_coord):
-
     while True:
         pos = (random.randint(min_coord, max_coord),
                random.randint(min_coord, max_coord))
@@ -29,39 +27,18 @@ def generate_fruit(snake_body, min_coord, max_coord):
             return pos
 
 def is_opposite(dir1, dir2):
-
     return (dir1 == "UP" and dir2 == "DOWN") or \
            (dir1 == "DOWN" and dir2 == "UP") or \
            (dir1 == "LEFT" and dir2 == "RIGHT") or \
            (dir1 == "RIGHT" and dir2 == "LEFT")
 
-def death_moves(history: QueueStack):
-    inverse = Stack(history.Max)
-    inverse_opposite = Stack(history.Max)
-
+def main():
     opposites = {
         "LEFT": "RIGHT",
         "RIGHT": "LEFT",
         "UP": "DOWN",
         "DOWN": "UP"
     }
-
-    # Copiamos los elementos directamente sin tocar el stack original
-    original_elements = history.Elements.copy()
-
-    # Recorremos en orden inverso
-    for i in range(history.Max - 1, -1, -1):
-        move = original_elements[i]
-        inverse.Push(move)
-        if move in opposites:
-            inverse_opposite.Push(opposites[move])
-        else:
-            inverse_opposite.Push(None)
-
-    return inverse, inverse_opposite
-
-
-def main():
 
     pygame.init()
     width, height = 601, 601
@@ -77,16 +54,19 @@ def main():
     fruit = generate_fruit(snake.body, min_coord, max_coord)
 
     movement_history = QueueStack(10)
+    freames_histroy = QueueStack(10)
 
     draw_scene(screen, grid, width, height)
     snake.draw(screen)
     pygame.draw.rect(screen, (255, 0, 0),
-    pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+                     pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
     pygame.display.flip()
 
     direction = None
+    running = True
+    freames_histroy.Push(snake.body.copy())
 
-    while True:
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -110,19 +90,32 @@ def main():
             snake.move(direction)
 
         if snake.check_collision(min_coord, max_coord):
-            ghost_moves, back_to_past_moves = death_moves(movement_history)
-            print(movement_history)
-            print(ghost_moves)
-            print(back_to_past_moves)
+            snake.reverse(opposites[direction])
 
-            # Back Time
-            snake.reverse()
+            # Mostrar los últimos estados guardados visualmente (replay)
+            while freames_histroy.Top != -1:
+                frame = freames_histroy.Pop()
+                draw_scene(screen, grid, width, height)
 
+                for index, segment in enumerate(frame):
+                    x = segment[0] * 25 + 189
+                    y = segment[1] * 25 + 189
+                    rect = pygame.Rect(x, y, 23, 23)
 
+                    if index == 0:
+                        pygame.draw.rect(screen, snake.color, rect)
+                    else:
+                        r, g, b = snake.color
+                        dark_color = (int(r * 0.7), int(g * 0.7), int(b * 0.7))
+                        pygame.draw.rect(screen, dark_color, rect)
 
-            break
+                pygame.display.flip()
+                pygame.time.delay(100)  # Velocidad del replay
+
+            break  # Salir del bucle principal tras mostrar la animación
 
         if direction:
+            freames_histroy.Push(snake.body.copy())
             movement_history.Push(direction)
 
         if snake.eats(fruit):
@@ -131,7 +124,7 @@ def main():
         draw_scene(screen, grid, width, height)
         snake.draw(screen)
         pygame.draw.rect(screen, (255, 0, 0),
-        pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
+                         pygame.Rect(fruit[0]*25+189, fruit[1]*25+189, 23, 23))
         pygame.display.flip()
 
         pygame.time.delay(100)
