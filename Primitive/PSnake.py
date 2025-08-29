@@ -1110,3 +1110,4 @@ class Snake:
         clone.seg80 = self.seg80
 
         return clone
+    

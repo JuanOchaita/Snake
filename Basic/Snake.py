@@ -1,3 +1,4 @@
+
 import pygame
 
 class Snake:
@@ -101,3 +102,4 @@ class Snake:
             self.body.pop(0)
         else:
             self.grow = False
+            

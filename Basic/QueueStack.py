@@ -1,3 +1,4 @@
+
 class QueueStack:
     
     def __init__(self, size: int):
